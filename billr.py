@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 import datetime
+import shortuuid
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
@@ -23,8 +24,8 @@ class StoresModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     address = db.Column(db.String())
-    owner = db.Column(db.Integer())
-    phone_number = db.Column(db.Integer())
+    owner = db.Column(db.String())
+    phone_number = db.Column(db.BigInteger())
     uid = db.Column(db.String())
 
     def __init__(self, name, address, owner, phone_number, uid):
@@ -42,6 +43,26 @@ class StoresModel(db.Model):
 # @cross_origin()
 def health_check():
     return "<h1 style='color:blue'>Working! 200 OK </h1>"
+
+
+@app.route("/api/v1/merchant/<int:phone>/passkey", methods=["POST"])
+def generate_merchant_passkey(phone):
+    if (
+        db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
+        == 0
+    ):
+        passkey = shortuuid.ShortUUID().random(length=10)
+        try:
+            data = StoresModel(None, None, None, phone, passkey)
+            db.session.add(data)
+            db.session.commit()
+            return jsonify({"success": True, "passkey": passkey, "phone": phone})
+        except:
+            return jsonify({"success": False, "Error": "Failed to generate passkey !"})
+    else:
+        return jsonify(
+            {"success": False, "Error": "Merchant already has a passkey generated !"}
+        )
 
 
 @app.route("/api/v1/bills/<phone>")
@@ -77,6 +98,13 @@ def fetch_bills(phone):
         return jsonify(bills_list)
     else:
         return jsonify({"Error": "404. No record found"})
+
+
+@app.errorhandler(404)
+def error_handler(e):
+    return jsonify(
+        {"success": False, "Error": "Cannot find the specified route !" + str(e)}
+    )
 
 
 if __name__ == "__main__":
