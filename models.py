@@ -20,3 +20,17 @@ class StoresModel(db.Model):
 
     def __repr__(self):
         return f"<Store {self.name}>"
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def updateStore(self, name, address, owner):
+        self.name = name
+        self.address = address
+        self.owner = owner
+        db.session.commit()
+
+    @staticmethod
+    def get_store(phone):
+        return StoresModel.query.filter_by(phone_number=phone).first()

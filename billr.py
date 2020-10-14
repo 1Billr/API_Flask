@@ -28,6 +28,17 @@ def health_check():
     return "<h1 style='color:blue'>Working! 200 OK </h1>"
 
 
+@app.route("/api/v1/merchant/<int:phone>")
+def check_if_merchant_exists(phone):
+    if (
+        db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
+        == 0
+    ):
+        return jsonify({"success": True, "merchantExists": False})
+    else:
+        return jsonify({"success": True, "merchantExists": True})
+
+
 @app.route("/api/v1/merchant/<int:phone>/passkey", methods=["POST"])
 def generate_merchant_passkey(phone):
     if (
@@ -45,6 +56,36 @@ def generate_merchant_passkey(phone):
     else:
         return jsonify(
             {"success": False, "Error": "Merchant already has a passkey generated !"}
+        )
+
+
+@app.route("/api/v1/merchant/<int:phone>/store", methods=["PUT"])
+def add_store_details(phone):
+    if (
+        db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
+        != 0
+    ):
+        if not request.json or not ("owner" and "name" and "address") in request.json:
+            return jsonify(
+                {
+                    "success": False,
+                    "Error": "Please provide all the required details !",
+                }
+            )
+        try:
+            store = StoresModel.get_store(phone)
+            store.updateStore(
+                request.json["name"], request.json["address"], request.json["owner"]
+            )
+            return jsonify({"success": True}), 201
+        except Exception as e:
+            return jsonify({"success": False, "Error": str(e)}), 500
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "Error": "Merchant with given phone no. doesn't exists !",
+            }
         )
 
 
@@ -85,9 +126,7 @@ def fetch_bills(phone):
 
 @app.errorhandler(404)
 def error_handler(e):
-    return jsonify(
-        {"success": False, "Error": "Cannot find the specified route !" + str(e)}
-    )
+    return jsonify({"success": False, "Error": str(e)})
 
 
 if __name__ == "__main__":
