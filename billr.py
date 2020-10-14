@@ -10,33 +10,16 @@ app = Flask(__name__)
 app.config[
     "SQLALCHEMY_DATABASE_URI"
 ] = "postgresql://postgres:postgres@localhost:5432/billr"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+from models import StoresModel
+
 # cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 # app.config['CORS_HEADERS'] = 'Content-Type'
 # cors = CORS(app)
 system_base_path = "/home/kshitij.singh/files/kushagra/billr_api/static/db/"
-
-
-class StoresModel(db.Model):
-    __tablename__ = "stores"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
-    address = db.Column(db.String())
-    owner = db.Column(db.String())
-    phone_number = db.Column(db.BigInteger())
-    uid = db.Column(db.String())
-
-    def __init__(self, name, address, owner, phone_number, uid):
-        self.name = name
-        self.address = address
-        self.owner = owner
-        self.phone_number = phone_number
-        self.uid = uid
-
-    def __repr__(self):
-        return f"<Store {self.name}>"
 
 
 @app.route("/")

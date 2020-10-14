@@ -24,3 +24,11 @@ flask db init
 flask db migrate
 flask db upgrade
 ```
+
+### Run app locally
+
+```
+source env/bin/activate
+export FLASK_APP=billr.py
+python3 -m flask run
+```
