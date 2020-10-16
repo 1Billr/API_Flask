@@ -34,12 +34,12 @@ def check_if_merchant_exists(phone):
         db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
         == 0
     ):
-        return jsonify({"success": True, "merchantExists": False})
+        return jsonify({"success": True, "exists": False})
     else:
-        return jsonify({"success": True, "merchantExists": True})
+        return jsonify({"success": True, "exists": True})
 
 
-@app.route("/api/v1/merchant/<int:phone>/passkey", methods=["POST"])
+@app.route("/api/v1/merchant/<int:phone>/generate/passkey/", methods=["POST"])
 def generate_merchant_passkey(phone):
     if (
         db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
@@ -52,11 +52,33 @@ def generate_merchant_passkey(phone):
             db.session.commit()
             return jsonify({"success": True, "passkey": passkey, "phone": phone})
         except:
-            return jsonify({"success": False, "Error": "Failed to generate passkey !"})
+            return jsonify({"success": False, "error": "Failed to generate passkey !"})
     else:
         return jsonify(
-            {"success": False, "Error": "Merchant already has a passkey generated !"}
+            {"success": False, "error": "Merchant already has a passkey generated !"}
         )
+
+
+@app.route("/api/v1/merchant/<int:phone>/passkey/", methods=["POST"])
+def check_valid_passkey(phone):
+    if not request.json or not "passkey" in request.json:
+        return jsonify(
+            {
+                "success": False,
+                "error": "Please provide a passkey !",
+            }
+        )
+    if (
+        db.session.query(StoresModel)
+        .filter(StoresModel.uid == request.json["passkey"])
+        .count()
+        == 0
+    ):
+        return jsonify(
+            {"success": True, "error": " Not a valid passkey !", "valid": False}
+        )
+    else:
+        return jsonify({"success": True})
 
 
 @app.route("/api/v1/merchant/<int:phone>/store", methods=["PUT"])
@@ -69,7 +91,7 @@ def add_store_details(phone):
             return jsonify(
                 {
                     "success": False,
-                    "Error": "Please provide all the required details !",
+                    "error": "Please provide all the required details !",
                 }
             )
         try:
@@ -79,12 +101,12 @@ def add_store_details(phone):
             )
             return jsonify({"success": True}), 201
         except Exception as e:
-            return jsonify({"success": False, "Error": str(e)}), 500
+            return jsonify({"success": False, "error": str(e)}), 500
     else:
         return jsonify(
             {
                 "success": False,
-                "Error": "Merchant with given phone no. doesn't exists !",
+                "error": "Merchant with given phone no. doesn't exists !",
             }
         )
 
