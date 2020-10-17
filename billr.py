@@ -4,7 +4,9 @@ from flask_migrate import Migrate
 import os
 import datetime
 import shortuuid
+import domain
 from flask_cors import CORS, cross_origin
+from multiprocessing import Pool
 
 app = Flask(__name__)
 app.config[
@@ -167,6 +169,7 @@ def add_new_bill(storeID):
                 .count()
                 != 0
             ):
+                domain.generate_pdf(data, details)
                 return (
                     jsonify(
                         {
