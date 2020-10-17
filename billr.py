@@ -36,12 +36,15 @@ def health_check():
 @app.route("/api/v1/merchant/<int:phone>")
 def check_if_merchant_exists(phone):
     if (
-        db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
-        == 0
+        db.session.query(StoresModel)
+        .filter(StoresModel.phone_number == phone)
+        .filter(StoresModel.passkey_exhausted == True)
+        .count()
+        != 0
     ):
-        return jsonify({"success": True, "exists": False})
-    else:
         return jsonify({"success": True, "exists": True})
+    else:
+        return jsonify({"success": True, "exists": False})
 
 
 @app.route("/api/v1/merchant/<int:phone>/generate/passkey", methods=["POST"])
@@ -96,7 +99,7 @@ def check_valid_passkey(phone):
             {"success": True, "error": " Not a valid passkey !", "valid": False}
         )
     else:
-        return jsonify({"success": True})
+        return jsonify({"success": True, "valid": True})
 
 
 @app.route("/api/v1/merchant/<int:phone>/store", methods=["PUT"])
