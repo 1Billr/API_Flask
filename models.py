@@ -1,5 +1,8 @@
 from billr import db
 import datetime
+from sqlalchemy.dialects.postgresql import JSONB
+
+"""Stores class to bills table """
 
 
 class StoresModel(db.Model):
@@ -81,3 +84,51 @@ class StoresModel(db.Model):
             + " passkey_exhausted : "
             + str(self.passkey_exhausted)
         )
+
+
+"""bills class to bills table """
+
+
+class BillsModel(db.Model):
+    __tablename__ = "bills"
+
+    id = db.Column(db.Integer, primary_key=True)
+    store_id = db.Column(db.Integer())
+    owner_name = db.Column(db.String())
+    store_phone_number = db.Column(db.BigInteger())
+    customer_name = db.Column(db.String())
+    customer_email = db.Column(db.String())
+    customer_phone_number = db.Column(db.BigInteger())
+    invoice_amount = db.Column(db.Float())
+    other_details = db.Column(JSONB)
+    updated_at = db.Column(db.DateTime())
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+    def __init__(
+        self,
+        store_id,
+        owner_name,
+        store_phone_number,
+        customer_name,
+        customer_email,
+        customer_phone_number,
+        invoice_amount,
+        other_details,
+    ):
+        self.store_id = store_id
+        self.owner_name = owner_name
+        self.store_phone_number = store_phone_number
+        self.customer_name = customer_name
+        self.customer_email = customer_email
+        self.customer_phone_number = customer_phone_number
+        self.invoice_amount = invoice_amount
+        self.other_details = other_details
+        self.updated_at = datetime.datetime.now()
+
+    def __repr__(self):
+        return f"<Bill {self.name}>"
+
+    @property
+    def save(self):
+        db.session.add(self)
+        db.session.commit()

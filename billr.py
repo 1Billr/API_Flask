@@ -14,7 +14,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import StoresModel
+from models import StoresModel, BillsModel
 
 # cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 # app.config['CORS_HEADERS'] = 'Content-Type'
@@ -52,7 +52,7 @@ def generate_merchant_passkey(phone):
         storeID = shortuuid.ShortUUID(alphabet="0123456789").random(length=5)
         try:
             data = StoresModel(None, None, None, phone, passkey, False, storeID)
-            data.createStore
+            data.save
             return jsonify({"success": True, "passkey": passkey, "phone": phone})
         except Exception as e:
             return (
@@ -73,11 +73,14 @@ def generate_merchant_passkey(phone):
 @app.route("/api/v1/merchant/<int:phone>/passkey", methods=["POST"])
 def check_valid_passkey(phone):
     if not request.json or not "passkey" in request.json:
-        return jsonify(
-            {
-                "success": False,
-                "error": "Please provide a passkey !",
-            }
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Please provide a passkey !",
+                }
+            ),
+            400,
         )
     if (
         db.session.query(StoresModel)
@@ -101,11 +104,14 @@ def add_store_details(phone):
         != 0
     ):
         if not request.json or not ("owner" and "name" and "address") in request.json:
-            return jsonify(
-                {
-                    "success": False,
-                    "error": "Please provide all the required details !",
-                }
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Please provide all the required details !",
+                    }
+                ),
+                400,
             )
         try:
             store = StoresModel.get_store_by_phone(phone)
@@ -138,12 +144,62 @@ def add_new_bill(storeID):
         db.session.query(StoresModel).filter(StoresModel.store_ID == storeID).count()
         != 0
     ):
-        return jsonify(
-            {
-                "success": True,
-                "error": "Doing some stuff",
-            }
-        )
+        if not request.json:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Please provide the required details !",
+                    }
+                ),
+                400,
+            )
+        try:
+            data = request.json
+            details = request.json["billDetails"]
+            # validate if customer's bill already has been generated
+            if (
+                db.session.query(BillsModel)
+                .filter(
+                    BillsModel.customer_phone_number == details["customerPhoneNumber"]
+                )
+                .filter(BillsModel.invoice_amount == details["invoiceAmount"])
+                .count()
+                != 0
+            ):
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "error": "Bill has been already generated for the customer",
+                        }
+                    ),
+                    400,
+                )
+
+            bill = BillsModel(
+                storeID,
+                data["owner"],
+                data["storePhoneNumber"],
+                details["customerName"],
+                details["customerEmail"],
+                details["customerPhoneNumber"],
+                details["invoiceAmount"],
+                details["otherDetails"],
+            )
+            bill.save
+
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "data": "TODO send generated pdf link",
+                    }
+                ),
+                201,
+            )
+        except Exception as e:
+            return jsonify({"success": False, "error": "Field missing " + str(e)}), 500
     else:
         return jsonify(
             {
