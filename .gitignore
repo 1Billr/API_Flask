@@ -148,3 +148,5 @@ billr_env/
 
 # Log files
 *.log
+
+migrations/

@@ -81,7 +81,9 @@ def check_valid_passkey(phone):
         )
     if (
         db.session.query(StoresModel)
-        .filter(StoresModel.uid == request.json["passkey"])
+        .filter(StoresModel.passkey == request.json["passkey"])
+        .filter(StoresModel.phone_number == phone)
+        .filter(StoresModel.passkey_exhausted == False)
         .count()
         == 0
     ):
@@ -126,6 +128,27 @@ def add_store_details(phone):
             {
                 "success": False,
                 "error": "Merchant with given phone no. doesn't exists !",
+            }
+        )
+
+
+@app.route("/api/v1/store/<int:storeID>/bill", methods=["PUT"])
+def add_new_bill(storeID):
+    if (
+        db.session.query(StoresModel).filter(StoresModel.store_ID == storeID).count()
+        != 0
+    ):
+        return jsonify(
+            {
+                "success": True,
+                "error": "Doing some stuff",
+            }
+        )
+    else:
+        return jsonify(
+            {
+                "success": True,
+                "error": "No store with given store Id exists in our system !",
             }
         )
 

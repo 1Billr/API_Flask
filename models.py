@@ -12,7 +12,7 @@ class StoresModel(db.Model):
     phone_number = db.Column(db.BigInteger())
     passkey = db.Column(db.String())
     passkey_exhausted = db.Column(db.Boolean())
-    store_ID = db.Column(db.String())
+    store_ID = db.Column(db.Integer())
     updated_at = db.Column(db.DateTime())
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -40,7 +40,7 @@ class StoresModel(db.Model):
         db.session.commit()
 
     @property
-    def createStore(self):
+    def save(self):
         db.session.add(self)
         db.session.commit()
 
