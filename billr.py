@@ -28,6 +28,9 @@ def health_check():
     return "<h1 style='color:blue'>Working! 200 OK </h1>"
 
 
+""" Merchant related routes"""
+
+
 @app.route("/api/v1/merchant/<int:phone>")
 def check_if_merchant_exists(phone):
     if (
@@ -39,27 +42,35 @@ def check_if_merchant_exists(phone):
         return jsonify({"success": True, "exists": True})
 
 
-@app.route("/api/v1/merchant/<int:phone>/generate/passkey/", methods=["POST"])
+@app.route("/api/v1/merchant/<int:phone>/generate/passkey", methods=["POST"])
 def generate_merchant_passkey(phone):
     if (
         db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
         == 0
     ):
         passkey = shortuuid.ShortUUID().random(length=10)
+        storeID = shortuuid.ShortUUID(alphabet="0123456789").random(length=5)
         try:
-            data = StoresModel(None, None, None, phone, passkey)
-            db.session.add(data)
-            db.session.commit()
+            data = StoresModel(None, None, None, phone, passkey, False, storeID)
+            data.createStore
             return jsonify({"success": True, "passkey": passkey, "phone": phone})
-        except:
-            return jsonify({"success": False, "error": "Failed to generate passkey !"})
+        except Exception as e:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "Failed to generate passkey : " + str(e),
+                    }
+                ),
+                500,
+            )
     else:
         return jsonify(
             {"success": False, "error": "Merchant already has a passkey generated !"}
         )
 
 
-@app.route("/api/v1/merchant/<int:phone>/passkey/", methods=["POST"])
+@app.route("/api/v1/merchant/<int:phone>/passkey", methods=["POST"])
 def check_valid_passkey(phone):
     if not request.json or not "passkey" in request.json:
         return jsonify(
@@ -95,11 +106,19 @@ def add_store_details(phone):
                 }
             )
         try:
-            store = StoresModel.get_store(phone)
+            store = StoresModel.get_store_by_phone(phone)
             store.updateStore(
                 request.json["name"], request.json["address"], request.json["owner"]
             )
-            return jsonify({"success": True}), 201
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "data": StoresModel.get_store_by_phone(phone).serialize,
+                    }
+                ),
+                201,
+            )
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
     else:
@@ -109,6 +128,9 @@ def add_store_details(phone):
                 "error": "Merchant with given phone no. doesn't exists !",
             }
         )
+
+
+""" Customer related routes """
 
 
 @app.route("/api/v1/bills/<phone>")
