@@ -47,6 +47,19 @@ def check_if_merchant_exists(phone):
         return jsonify({"success": True, "exists": False})
 
 
+@app.route("/api/v1/merchant/<int:phone>", methods=["DELETE"])
+def delete_store_details(phone):
+    if (
+        db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
+        != 0
+    ):
+        db.session.query(StoresModel).filter(StoresModel.phone_number == phone).delete()
+        db.session.commit()
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False}), 400
+
+
 @app.route("/api/v1/merchant/<int:phone>/generate/passkey", methods=["POST"])
 def generate_merchant_passkey(phone):
     if (
