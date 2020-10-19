@@ -28,7 +28,9 @@ def convertHtmlToPdf(sourceHtml, outputFilename):
 
 def generate_pdf(data, details):
     sourceHtml = template.render(json_data=data, details_data=details, css=CSS_FILE)
-    outputFilename = "gen_bills/" + str(details["customerPhoneNumber"]) + "-invoice.pdf"
+    outputFilename = (
+        "static/new_files/" + str(details["customerPhoneNumber"]) + "-invoice.pdf"
+    )
     pisa.showLogging()
     convertHtmlToPdf(sourceHtml, outputFilename)
     return outputFilename
