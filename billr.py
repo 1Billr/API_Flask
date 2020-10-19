@@ -185,7 +185,6 @@ def add_new_bill(storeID):
                 .count()
                 != 0
             ):
-                domain.generate_pdf(data, details)
                 return (
                     jsonify(
                         {
@@ -207,12 +206,13 @@ def add_new_bill(storeID):
                 details["otherDetails"],
             )
             bill.save
-
+            billpath = domain.generate_pdf(data, details)
+            bill_url = domain_base_path = f"{request.host}/" + billpath
             return (
                 jsonify(
                     {
                         "success": True,
-                        "data": "TODO send generated pdf link",
+                        "data": {"bill": bill_url},
                     }
                 ),
                 201,
