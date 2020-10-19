@@ -158,6 +158,7 @@ def add_store_details(phone):
 
 @app.route("/api/v1/store/<int:storeID>/bill", methods=["PUT"])
 def add_new_bill(storeID):
+    store = db.session.query(StoresModel).filter(StoresModel.store_ID == storeID)
     if (
         db.session.query(StoresModel).filter(StoresModel.store_ID == storeID).count()
         != 0
@@ -204,9 +205,11 @@ def add_new_bill(storeID):
                 details["customerPhoneNumber"],
                 details["invoiceAmount"],
                 details["otherDetails"],
+                details["items"],
             )
-            bill.save
-            billpath = domain.generate_pdf(data, details)
+            savedBill = bill.save
+            storeData = StoresModel.get_store_by_id(storeID).serialize
+            billpath = domain.generate_pdf(savedBill, storeData)
             bill_url = domain_base_path = f"{request.host}/" + billpath
             return (
                 jsonify(

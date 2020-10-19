@@ -9,36 +9,36 @@
   <body>
     <div class="container">
       <div class="inv-title">
-        <h1>Invoice # 424773</h1>
+        <h1>Invoice #{{data["id"]}}</h1>
       </div>
       <div class="inv-header">
         <div>
-          <h2>{ store_name }</h2>
+          <h2>{{ storeData["name"] }}</h2>
           <ul>
-            <li>{ store_address }</li>
-            <li>{{ json_data["storePhoneNumber"] }} | { store_email }</li>
+            <li>{{ storeData["address"] }}</li>
+            <li>{{ storeData["phone_number"] }}</li>
           </ul>
         </div>
         <div>
           <table>
             <tr>
-              <th>Customer name : /th></th>
-              <td>{{ details_data["customerName"] }}</td>
+              <th>Customer name :</th>
+              <td>{{ data["customerName"] }}</td>
             </tr>
             <tr>
               <th>Contact info :</th>
               <td>
-                +91-{{ details_data["customerPhoneNumber"] }} - {{
-                details_data["customerEmail"] }}
+                +91-{{ data["customerPhoneNumber"] }} - {{ data["customerEmail"]
+                }}
               </td>
             </tr>
             <tr>
-              <th>Issue Date</th>
-              <td>12-02-2018</td>
+              <th>Issue Date :</th>
+              <td>{{ data["createdAt"] }}</td>
             </tr>
             <tr>
-              <th>Total</th>
-              <td>{{ details_data["invoiceAmount"] }}</td>
+              <th>Total :</th>
+              <td>{{ data["invoiceAmount"] }}</td>
             </tr>
           </table>
         </div>
@@ -51,22 +51,15 @@
             <th>Price</th>
           </thead>
           <tbody>
+            {% for dict_item in data["items"] %}
             <tr>
               <td>
-                <h4>Hosting</h4>
-                <p>Some kind of hositing</p>
+                <h4>{{ dict_item["product"] }}</h4>
               </td>
-              <td>1</td>
-              <td>2000</td>
+              <td>{{ dict_item["quantity"] }}</td>
+              <td>{{ dict_item["price"] }}</td>
             </tr>
-            <tr>
-              <td>
-                <h4>Hosting</h4>
-                <p>Some kind of hositing</p>
-              </td>
-              <td>1</td>
-              <td>2000</td>
-            </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
@@ -74,18 +67,13 @@
         <div><!-- required --></div>
         <div>
           <table>
+            {% for dict_item in data["otherDetails"] %} {% for key, value in
+            dict_item.items() %}
             <tr>
-              <th>Sub total</th>
-              <td>200</td>
+              <td>{{key}}</td>
+              <td>{{value}}</td>
             </tr>
-            <tr>
-              <th>Sales tax</th>
-              <td>200</td>
-            </tr>
-            <tr>
-              <th>Grand total</th>
-              <td>1200</td>
-            </tr>
+            {% endfor %} {% endfor %}
           </table>
         </div>
       </div>

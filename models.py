@@ -51,6 +51,10 @@ class StoresModel(db.Model):
     def get_store_by_phone(phone):
         return StoresModel.query.filter_by(phone_number=phone).first()
 
+    @staticmethod
+    def get_store_by_id(id):
+        return StoresModel.query.filter_by(store_ID=id).first()
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
@@ -101,6 +105,7 @@ class BillsModel(db.Model):
     customer_phone_number = db.Column(db.BigInteger())
     invoice_amount = db.Column(db.Float())
     other_details = db.Column(JSONB)
+    items = db.Column(JSONB)
     updated_at = db.Column(db.DateTime())
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -114,6 +119,7 @@ class BillsModel(db.Model):
         customer_phone_number,
         invoice_amount,
         other_details,
+        items,
     ):
         self.store_id = store_id
         self.owner_name = owner_name
@@ -124,6 +130,7 @@ class BillsModel(db.Model):
         self.invoice_amount = invoice_amount
         self.other_details = other_details
         self.updated_at = datetime.datetime.now()
+        self.items = items
 
     def __repr__(self):
         return f"<Bill {self.name}>"
@@ -132,3 +139,22 @@ class BillsModel(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+        return self.serialize
+
+    @property
+    def serialize(self):
+        """Return object data in easily serializable format"""
+        return {
+            "createdAt": self.created_at,
+            "updatedAt": self.updated_at,
+            "otherDetails": self.other_details,
+            "invoiceAmount": self.invoice_amount,
+            "customerPhoneNumber": self.customer_phone_number,
+            "customerEmail": self.customer_email,
+            "customerName": self.customer_name,
+            "storePhoneNumber": self.store_phone_number,
+            "ownerName": self.owner_name,
+            "storeId": self.store_id,
+            "id": self.id,
+            "items": self.items,
+        }
