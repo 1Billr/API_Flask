@@ -47,6 +47,24 @@ def check_if_merchant_exists(phone):
         return jsonify({"success": True, "exists": False})
 
 
+@app.route("/api/v1/merchant/<int:phone>/profile")
+def profile_details(phone):
+    if (
+        db.session.query(StoresModel).filter(StoresModel.phone_number == phone).count()
+        != 0
+    ):
+        return jsonify(
+            {"success": True, "data": StoresModel.get_store_by_phone(phone).serialize}
+        )
+    else:
+        return (
+            jsonify(
+                {"success": False, "error": "Profile details not found for user !"}
+            ),
+            400,
+        )
+
+
 @app.route("/api/v1/merchant/<int:phone>", methods=["DELETE"])
 def delete_store_details(phone):
     if (
