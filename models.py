@@ -141,6 +141,12 @@ class BillsModel(db.Model):
         db.session.commit()
         return self.serialize
 
+    @staticmethod
+    def get_bills_by_store(id):
+        return BillsModel.query.filter_by(store_id=id).order_by(
+            BillsModel.created_at.desc()
+        )
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
@@ -157,4 +163,15 @@ class BillsModel(db.Model):
             "storeId": self.store_id,
             "id": self.id,
             "items": self.items,
+        }
+
+    @property
+    def serialize_basic_details(self):
+        """Return object data in easily serializable format"""
+        return {
+            "createdAt": self.created_at,
+            "invoiceAmount": self.invoice_amount,
+            "customerName": self.customer_name,
+            "ownerName": self.owner_name,
+            "bill": "https://abc.com/pdf",
         }

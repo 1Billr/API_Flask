@@ -78,6 +78,30 @@ def delete_store_details(phone):
         return jsonify({"success": False}), 400
 
 
+@app.route("/api/v1/store/<int:storeId>/bills")
+def get_store_bills(storeId):
+    if (
+        db.session.query(StoresModel).filter(StoresModel.store_ID == storeId).count()
+        != 0
+    ):
+        limit = request.args.get("limit", default=0, type=int)
+        offset = request.args.get("offset", default=0, type=int)
+        data = [
+            e.serialize_basic_details for e in BillsModel.get_bills_by_store(storeId)
+        ]
+        if offset != 0:
+            data = data[offset : len(data)]
+        if limit != 0:
+            data = data[0:limit]
+
+        return jsonify({"success": True, "data": data})
+    else:
+        return (
+            jsonify({"success": False, "error": "No store with store id found !"}),
+            200,
+        )
+
+
 @app.route("/api/v1/merchant/<int:phone>/generate/passkey", methods=["POST"])
 def generate_merchant_passkey(phone):
     if (
