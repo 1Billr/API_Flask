@@ -147,6 +147,14 @@ class BillsModel(db.Model):
             BillsModel.created_at.desc()
         )
 
+    @staticmethod
+    def get_bills_by_search(id, q):
+        return (
+            BillsModel.query.filter(BillsModel.customer_name.ilike("%" + q + "%"))
+            .filter_by(store_id=id)
+            .order_by(BillsModel.created_at.desc())
+        )
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""

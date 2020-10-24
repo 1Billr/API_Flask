@@ -86,9 +86,17 @@ def get_store_bills(storeId):
     ):
         limit = request.args.get("limit", default=0, type=int)
         offset = request.args.get("offset", default=0, type=int)
-        data = [
-            e.serialize_basic_details for e in BillsModel.get_bills_by_store(storeId)
-        ]
+        query = request.args.get("q", default="*", type=str)
+        if query != "*":
+            data = [
+                e.serialize_basic_details
+                for e in BillsModel.get_bills_by_search(storeId, query)
+            ]
+        else:
+            data = [
+                e.serialize_basic_details
+                for e in BillsModel.get_bills_by_store(storeId)
+            ]
         if offset != 0:
             data = data[offset : len(data)]
         if limit != 0:
