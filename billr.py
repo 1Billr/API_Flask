@@ -294,7 +294,8 @@ def add_new_bill(storeID):
             savedBill = bill.save
             storeData = StoresModel.get_store_by_id(storeID).serialize
             billpath = domain.generate_pdf(savedBill, storeData)
-            bill_url = domain_base_path = f"{request.host}/" + billpath
+            bill_url = domain_base_path = f"{request.host_url}" + billpath
+            BillsModel.add_bill_url(bill_url, savedBill["id"])
             billUrl = {"bill": bill_url}
             return (
                 jsonify(
@@ -306,7 +307,7 @@ def add_new_bill(storeID):
                 201,
             )
         except Exception as e:
-            return jsonify({"success": False, "error": "Field missing " + str(e)}), 500
+            return jsonify({"success": False, "error": str(e)}), 500
     else:
         return jsonify(
             {

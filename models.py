@@ -106,6 +106,7 @@ class BillsModel(db.Model):
     invoice_amount = db.Column(db.Float())
     other_details = db.Column(JSONB)
     items = db.Column(JSONB)
+    bill_url = db.Column(db.String())
     updated_at = db.Column(db.DateTime())
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -163,6 +164,11 @@ class BillsModel(db.Model):
             .filter_by(invoice_amount=amount)
             .order_by(BillsModel.created_at.desc())
         )
+
+    def add_bill_url(bill_url, bill_id):
+        print(bill_url + " - " + str(bill_id))
+        BillsModel.query.filter_by(id=bill_id).update({"bill_url": bill_url})
+        db.session.commit()
 
     @property
     def serialize(self):
