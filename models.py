@@ -196,5 +196,5 @@ class BillsModel(db.Model):
             "invoiceAmount": self.invoice_amount,
             "customerName": self.customer_name,
             "ownerName": self.owner_name,
-            "bill": "https://slicedinvoices.com/pdf/wordpress-pdf-invoice-plugin-sample.pdf",
+            "bill": self.bill_url,
         }
