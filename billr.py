@@ -110,6 +110,36 @@ def get_store_bills(storeId):
         )
 
 
+@app.route("/api/v1/store/<int:storeId>/bills/detail")
+def get_store_details(storeId):
+    store_count = (
+        db.session.query(StoresModel).filter(StoresModel.store_ID == storeId).count()
+    )
+    if store_count != 0:
+        data = [
+            e.serialize_basic_details for e in BillsModel.get_bills_by_store(storeId)
+        ]
+        bill_count = len(data)
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "data": {
+                        "totalBills": bill_count,
+                        "totalStores": 1,
+                        "totalPagesSaved": bill_count,
+                    },
+                }
+            ),
+            200,
+        )
+    else:
+        return (
+            jsonify({"success": True, "error": "No such store found !"}),
+            200,
+        )
+
+
 @app.route("/api/v1/merchant/<int:phone>/generate/passkey", methods=["POST"])
 def generate_merchant_passkey(phone):
     if (
@@ -261,11 +291,12 @@ def add_new_bill(storeID):
             storeData = StoresModel.get_store_by_id(storeID).serialize
             billpath = domain.generate_pdf(savedBill, storeData)
             bill_url = domain_base_path = f"{request.host}/" + billpath
+            billUrl = {"bill": bill_url}
             return (
                 jsonify(
                     {
                         "success": True,
-                        "data": {"bill": bill_url},
+                        "data": {**savedBill, **billUrl},
                     }
                 ),
                 201,
