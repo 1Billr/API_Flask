@@ -46,7 +46,14 @@ def generate_pdf(data, storeData):
         str(data["customerPhoneNumber"]), str(storeData["name"])
     )
     sourceHtml = template.render(data=data, storeData=storeData, css=CSS_FILE)
-    outputFilename = file_path + data["createdAt"].strftime("%Y%M%d%H%M%S") + ".pdf"
+    amountTotal = str(data["invoiceAmount"])
+    outputFilename = (
+        file_path
+        + data["createdAt"].strftime("%Y%M%d%H%M%S")
+        + "_"
+        + amountTotal[0 : amountTotal.find(".")]
+        + ".pdf"
+    )
     pisa.showLogging()
     convertHtmlToPdf(sourceHtml, outputFilename)
     return outputFilename
