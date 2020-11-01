@@ -51,7 +51,7 @@ def generate_pdf(data, storeData):
         file_path
         + data["createdAt"].strftime("%Y%m%d%H%M%S")
         + "_"
-        + amountTotal[0 : amountTotal.find(".")]
+        + amountTotal
         + ".pdf"
     )
     pisa.showLogging()
