@@ -49,7 +49,7 @@ def generate_pdf(data, storeData):
     amountTotal = str(data["invoiceAmount"])
     outputFilename = (
         file_path
-        + data["createdAt"].strftime("%Y%M%d%H%M%S")
+        + data["createdAt"].strftime("%Y%m%d%H%M%S")
         + "_"
         + amountTotal[0 : amountTotal.find(".")]
         + ".pdf"
