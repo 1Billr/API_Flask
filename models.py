@@ -155,6 +155,15 @@ class BillsModel(db.Model):
             .order_by(BillsModel.created_at.desc())
         )
 
+    @staticmethod
+    def get_bills_by_phone_amount_and_store(id, phone, amount):
+        return (
+            BillsModel.query.filter_by(customer_phone_number=phone)
+            .filter_by(store_id=id)
+            .filter_by(invoice_amount=amount)
+            .order_by(BillsModel.created_at.desc())
+        )
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""

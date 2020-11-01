@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from datetime import timezone
 import os
 import datetime
 import shortuuid
@@ -238,7 +239,6 @@ def add_store_details(phone):
 
 @app.route("/api/v1/store/<int:storeID>/bill", methods=["PUT"])
 def add_new_bill(storeID):
-    store = db.session.query(StoresModel).filter(StoresModel.store_ID == storeID)
     if (
         db.session.query(StoresModel).filter(StoresModel.store_ID == storeID).count()
         != 0
@@ -257,24 +257,28 @@ def add_new_bill(storeID):
             data = request.json
             details = request.json["billDetails"]
             # validate if customer's bill already has been generated
-            if (
-                db.session.query(BillsModel)
-                .filter(
-                    BillsModel.customer_phone_number == details["customerPhoneNumber"]
+
+            duplicate_bills = [
+                e.serialize_basic_details
+                for e in BillsModel.get_bills_by_phone_amount_and_store(
+                    storeID, details["customerPhoneNumber"], details["invoiceAmount"]
                 )
-                .filter(BillsModel.invoice_amount == details["invoiceAmount"])
-                .count()
-                != 0
-            ):
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "error": "Bill has been already generated for the customer",
-                        }
-                    ),
-                    400,
-                )
+            ]
+            curr_time_last_10_min = datetime.datetime.now(tz=timezone.utc).replace(
+                tzinfo=None
+            )
+            if len(duplicate_bills) > 0:
+                time_diff = curr_time_last_10_min - duplicate_bills[0]["createdAt"]
+                if time_diff.seconds <= 60:
+                    return (
+                        jsonify(
+                            {
+                                "success": False,
+                                "error": "Bill has been already generated for the customer",
+                            }
+                        ),
+                        400,
+                    )
 
             bill = BillsModel(
                 storeID,
